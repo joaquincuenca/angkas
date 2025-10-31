@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   MapContainer,
   TileLayer,
   Marker,
   Popup,
+  useMap,
   useMapEvents,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -41,6 +42,17 @@ function MapButtons({ reset }) {
   );
 }
 
+// Automatically center map on user location
+function AutoCenterMap({ position }) {
+  const map = useMap();
+  useEffect(() => {
+    if (position) {
+      map.setView(position, 15);
+    }
+  }, [position, map]);
+  return null;
+}
+
 function BookingPage() {
   const navigate = useNavigate();
   const [pickup, setPickup] = useState(null);
@@ -48,6 +60,7 @@ function BookingPage() {
   const [distance, setDistance] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showHint, setShowHint] = useState(true);
+  const [userLocation, setUserLocation] = useState(null);
 
   // Fare settings
   const baseFare = 50;
@@ -104,13 +117,34 @@ function BookingPage() {
       : 0;
 
   const resetMap = () => {
-    setPickup(null);
+    setPickup(userLocation); // keep user's location as pickup
     setDestination(null);
     setDistance(null);
   };
 
   const openFacebookPage = () =>
     window.open("https://www.facebook.com/profile.php?id=61582462506784", "_blank");
+
+  // 🧭 Detect user’s current location on load
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          const userPos = { lat: latitude, lng: longitude };
+          setUserLocation(userPos);
+          setPickup(userPos);
+          setShowHint(true);
+        },
+        (err) => {
+          console.error(err);
+          alert("Unable to get your location. Please enable GPS.");
+        }
+      );
+    } else {
+      alert("Geolocation is not supported by your browser.");
+    }
+  }, []);
 
   return (
     <div className="h-screen flex flex-col relative bg-gradient-to-b from-gray-900 via-gray-800 to-gray-950 text-white">
@@ -135,8 +169,8 @@ function BookingPage() {
           <div className="bg-white text-gray-800 rounded-2xl shadow-2xl p-8 w-80 text-center animate-fadeIn">
             <h2 className="text-lg font-bold mb-2">How to Book a Ride</h2>
             <p className="text-sm mb-4">
-              Tap on the map to set your <b>pickup</b>, then tap again to set your{" "}
-              <b>destination</b>.
+              Your <b>pickup</b> location is automatically set to where you are now.
+              Tap on the map to set your <b>destination</b>.
             </p>
             <p className="text-xs text-gray-600">(Tap anywhere to continue)</p>
           </div>
@@ -146,17 +180,19 @@ function BookingPage() {
       {/* Map */}
       <div className="relative flex-1">
         <MapContainer
-          center={[14.1122, 122.9553]}
+          center={userLocation || [14.1122, 122.9553]}
           zoom={13}
           className="w-full h-full z-0"
           attributionControl={false}
         >
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          {userLocation && <AutoCenterMap position={userLocation} />}
+
           <LocationSelector onSelect={handleSelect} hideHint={() => setShowHint(false)} />
 
           {pickup && (
             <Marker position={pickup} icon={markerIcon}>
-              <Popup>Pickup Point</Popup>
+              <Popup>Your Pickup Point</Popup>
             </Marker>
           )}
           {destination && (
