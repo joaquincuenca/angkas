@@ -103,24 +103,40 @@ export default function LandingPage() {
         </Link>
       </section>
 
-      {/* 🏍️ About Section */}
-      <section
-        id="about"
-        className="bg-gray-900 py-16 px-6 md:px-12 text-center"
-      >
-        <h3 className="text-3xl font-bold text-yellow-400 mb-4">About Us</h3>
-        <p className="text-gray-300 max-w-2xl mx-auto mb-6">
-          Ghetto Riders is your go-to motorcycle booking service that connects
-          riders and passengers seamlessly. Whether you’re commuting to work,
-          visiting friends, or exploring the city, we guarantee safe, fast, and
-          budget-friendly rides.
-        </p>
-        <p className="text-gray-400 max-w-2xl mx-auto">
-          Our professional riders are trained and equipped to ensure your
-          comfort and security. With our app, you can easily track your ride,
-          estimate your fare, and get where you need to go — hassle-free.
-        </p>
-      </section>
+{/* 🏍️ About Section */}
+<section
+  id="about"
+  className="bg-gray-900 py-16 px-6 md:px-12 text-center"
+>
+  <h3 className="text-3xl font-bold text-yellow-400 mb-4">About Us</h3>
+
+  <p className="text-gray-300 max-w-2xl mx-auto mb-6">
+    Ghetto Riders is your go-to motorcycle booking service that connects
+    riders and passengers seamlessly. Whether you’re commuting to work,
+    visiting friends, or exploring the city, we guarantee safe, fast, and
+    budget-friendly rides.
+  </p>
+
+  <p className="text-gray-400 max-w-2xl mx-auto mb-10">
+    Our professional riders are trained and equipped to ensure your
+    comfort and security. With our app, you can easily track your ride,
+    estimate your fare, and get where you need to go — hassle-free.
+  </p>
+
+  {/* 📍 Scope / Service Area Image */}
+  <div className="flex justify-center">
+    <img
+      src="/scope.png" // 🔁 Place your image inside the public/ folder
+      alt="Service Scope Map"
+      className="w-full max-w-2xl rounded-lg border-4 border-yellow-400 shadow-lg"
+    />
+  </div>
+
+  <p className="text-sm text-gray-400 mt-4 italic">
+    Green areas represent full service coverage, yellow for limited areas, and red for out of scope.
+  </p>
+</section>
+
 
       {/* 📞 Contact Section */}
       <section
