@@ -164,7 +164,7 @@
                 href="mailto:ghettoriders@gmail.com"
                 className="hover:text-yellow-400"
                 >
-                ghettoriders@gmail.com
+                ridersghetto@gmail.com
                 </a>
             </div>
 

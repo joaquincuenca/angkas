@@ -10,30 +10,30 @@ import {
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
-// 🧭 Custom marker icon
+// Custom marker icon
 const markerIcon = new L.Icon({
   iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
-  iconSize: [35, 35],
+  iconSize: [38, 38],
 });
 
-// 🖱️ Detect user clicks on map
+// Detect user clicks on map
 function LocationSelector({ onSelect, hideHint }) {
   useMapEvents({
     click(e) {
-      hideHint(); // hide popup when user clicks
+      hideHint();
       onSelect(e.latlng);
     },
   });
   return null;
 }
 
-// 🌐 Map helper buttons
+// Map helper buttons
 function MapButtons({ reset }) {
   return (
-    <div className="absolute top-4 left-4 flex flex-col gap-2 z-50">
+    <div className="absolute top-5 left-5 flex flex-col gap-3 z-50">
       <button
         onClick={reset}
-        className="bg-indigo-700 text-white px-4 py-2 rounded-lg shadow hover:bg-indigo-800 transition"
+        className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2 rounded-xl shadow-md transition-all"
       >
         Reset
       </button>
@@ -49,12 +49,12 @@ function BookingPage() {
   const [loading, setLoading] = useState(false);
   const [showHint, setShowHint] = useState(true);
 
-  // 🚕 Fare settings
+  // Fare settings
   const baseFare = 50;
   const baseKm = 3;
   const extraRate = 15;
 
-  // 🧮 OpenRouteService API
+  // OpenRouteService API
   async function getAccurateDistance(start, end) {
     const apiKey =
       "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImZhMGNmMzAyYWZkNDRhMTNhMjlhOWVjZGM5NDAwNDFiIiwiaCI6Im11cm11cjY0In0=";
@@ -71,13 +71,12 @@ function BookingPage() {
         },
         body: JSON.stringify(body),
       });
-
       const data = await response.json();
       const distanceInKm = data.routes[0].summary.distance / 1000;
       setDistance(distanceInKm);
     } catch (error) {
       console.error(error);
-      alert("Failed to get distance. Check API key.");
+      alert("Failed to get distance. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -96,14 +95,13 @@ function BookingPage() {
     }
   };
 
-  // 🚀 Computed fare
-  let computedFare = 0;
-  if (distance) {
-    computedFare =
-      distance <= baseKm
+  // Computed fare
+  const computedFare =
+    distance != null
+      ? distance <= baseKm
         ? baseFare
-        : baseFare + (distance - baseKm) * extraRate;
-  }
+        : baseFare + (distance - baseKm) * extraRate
+      : 0;
 
   const resetMap = () => {
     setPickup(null);
@@ -111,48 +109,41 @@ function BookingPage() {
     setDistance(null);
   };
 
-  // 🌐 Facebook redirect
-  const openFacebookPage = () => {
-    window.open(
-      "https://www.facebook.com/profile.php?id=61582462506784",
-      "_blank"
-    );
-  };
+  const openFacebookPage = () =>
+    window.open("https://www.facebook.com/profile.php?id=61582462506784", "_blank");
 
   return (
-    <div className="h-screen flex flex-col relative bg-gray-900 text-white">
-      {/* 🧭 Header */}
-      <div className="flex justify-between items-center p-4 bg-gray-800 shadow-md sticky top-0 z-50">
+    <div className="h-screen flex flex-col relative bg-gradient-to-b from-gray-900 via-gray-800 to-gray-950 text-white">
+      {/* Header */}
+      <header className="flex justify-between items-center px-5 py-4 bg-gray-800 border-b border-gray-700 sticky top-0 z-50 shadow-lg">
         <button
           onClick={() => navigate("/")}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition flex items-center gap-1"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition"
         >
-          ← <span className="hidden sm:inline">Back to Home</span>
+          ← <span className="hidden sm:inline">Back</span>
         </button>
-        <h1 className="text-xl sm:text-2xl font-bold text-center">
-          Pekeng Siklista
-        </h1>
-        <div className="w-[100px]" />
-      </div>
+        <h1 className="text-2xl font-bold tracking-wide">Ghetto Rider</h1>
+        <div className="w-[80px]" />
+      </header>
 
-      {/* 💬 Popup Hint Overlay */}
+      {/* Hint Popup */}
       {showHint && (
         <div
-          className="absolute inset-0 bg-black bg-opacity-70 flex flex-col items-center justify-center z-[999]"
+          className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-[999] cursor-pointer"
           onClick={() => setShowHint(false)}
         >
-          <div className="bg-white text-gray-800 rounded-xl shadow-2xl p-8 w-80 text-center animate-bounce">
-            <h2 className="text-lg font-bold mb-2">📍 How to Book a Ride</h2>
+          <div className="bg-white text-gray-800 rounded-2xl shadow-2xl p-8 w-80 text-center animate-fadeIn">
+            <h2 className="text-lg font-bold mb-2">How to Book a Ride</h2>
             <p className="text-sm mb-4">
-              Tap on the map to set your <b>pickup location</b>, then tap again
-              to set your <b>destination</b>.
+              Tap on the map to set your <b>pickup</b>, then tap again to set your{" "}
+              <b>destination</b>.
             </p>
             <p className="text-xs text-gray-600">(Tap anywhere to continue)</p>
           </div>
         </div>
       )}
 
-      {/* 🗺️ Map Section */}
+      {/* Map */}
       <div className="relative flex-1">
         <MapContainer
           center={[14.1122, 122.9553]}
@@ -161,10 +152,7 @@ function BookingPage() {
           attributionControl={false}
         >
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          <LocationSelector
-            onSelect={handleSelect}
-            hideHint={() => setShowHint(false)}
-          />
+          <LocationSelector onSelect={handleSelect} hideHint={() => setShowHint(false)} />
 
           {pickup && (
             <Marker position={pickup} icon={markerIcon}>
@@ -180,54 +168,50 @@ function BookingPage() {
 
         <MapButtons reset={resetMap} />
 
-        {/* 📄 Fare Receipt */}
+        {/* Fare Receipt */}
         {pickup && destination && distance && (
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 bg-gray-800 shadow-xl rounded-xl p-6 w-72 sm:w-80 border border-gray-700 z-50 flex flex-col items-center">
-            <h2 className="text-xl font-bold text-center mb-2 text-white">
-              Ride Receipt
-            </h2>
-            <hr className="mb-2 border-gray-600" />
-            <p className="text-gray-300 text-sm">
-              <span className="font-semibold">Pickup:</span>{" "}
-              {pickup.lat.toFixed(4)}, {pickup.lng.toFixed(4)}
-            </p>
-            <p className="text-gray-300 text-sm">
-              <span className="font-semibold">Destination:</span>{" "}
-              {destination.lat.toFixed(4)}, {destination.lng.toFixed(4)}
-            </p>
-            <p className="text-gray-200 mt-2">
-              <span className="font-semibold">Distance:</span>{" "}
-              {distance.toFixed(2)} km
-            </p>
-            <p className="text-gray-200">
-              <span className="font-semibold">Base Fare:</span> ₱{baseFare}{" "}
-              (first {baseKm} km)
-            </p>
-            {distance > baseKm && (
-              <p className="text-gray-200">
-                <span className="font-semibold">Extra:</span> ₱{extraRate} ×{" "}
-                {(distance - baseKm).toFixed(2)} km
+          <div className="absolute right-5 bottom-5 bg-gray-900 text-white border border-gray-700 shadow-2xl rounded-2xl p-6 w-80 transition-all animate-slideUp">
+            <h2 className="text-xl font-bold text-center mb-3">Ride Summary</h2>
+            <div className="space-y-1 text-sm">
+              <p>
+                <span className="font-semibold text-gray-200">Pickup:</span>{" "}
+                {pickup.lat.toFixed(4)}, {pickup.lng.toFixed(4)}
               </p>
-            )}
-            <p className="text-green-400 font-bold text-lg mt-2">
-              Total Fare: ₱{computedFare.toFixed(2)}
-            </p>
-            {distance <= baseKm && (
-              <p className="text-xs text-gray-500 text-center mt-1">
-                (Minimum fare applied)
+              <p>
+                <span className="font-semibold text-gray-200">Destination:</span>{" "}
+                {destination.lat.toFixed(4)}, {destination.lng.toFixed(4)}
               </p>
-            )}
+              <p>
+                <span className="font-semibold text-gray-200">Distance:</span>{" "}
+                {distance.toFixed(2)} km
+              </p>
+              <p>
+                <span className="font-semibold text-gray-200">Base Fare:</span> ₱{baseFare} (
+                first {baseKm} km)
+              </p>
+              {distance > baseKm && (
+                <p>
+                  <span className="font-semibold text-gray-200">Extra:</span> ₱{extraRate} ×{" "}
+                  {(distance - baseKm).toFixed(2)} km
+                </p>
+              )}
+            </div>
+            <div className="text-center mt-3">
+              <p className="text-green-400 font-bold text-lg">
+                Total Fare: ₱{computedFare.toFixed(2)}
+              </p>
+              {distance <= baseKm && (
+                <p className="text-xs text-gray-400">(Minimum fare applied)</p>
+              )}
+            </div>
 
-            {/* 📸 Instruction Text */}
-            <p className="text-sm text-gray-400 text-center mt-4">
-              Screenshot this receipt and send it to our Facebook page to
-              confirm your booking.
+            <p className="text-xs text-gray-300 text-center mt-4">
+              Screenshot this and send it to our Facebook page to confirm booking.
             </p>
 
-            {/* 🌐 Facebook Booking Button */}
             <button
               onClick={openFacebookPage}
-              className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md w-full transition"
+              className="mt-4 bg-blue-600 hover:bg-blue-700 text-white w-full py-2 rounded-lg font-medium shadow-md transition"
             >
               Book via Facebook
             </button>
@@ -235,10 +219,10 @@ function BookingPage() {
         )}
       </div>
 
-      {/* 🕓 Loading indicator */}
+      {/* Loading overlay */}
       {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-lg">
-          Calculating distance...
+        <div className="absolute inset-0 flex items-center justify-center bg-black/70 text-lg font-medium z-[1000]">
+          <div className="animate-pulse">Calculating distance...</div>
         </div>
       )}
     </div>
