@@ -71,7 +71,7 @@ function BookingPage() {
         },
         body: JSON.stringify(body),
       });
-      
+
       const data = await response.json();
       const distanceInKm = data.routes[0].summary.distance / 1000;
       setDistance(distanceInKm);
@@ -113,7 +113,10 @@ function BookingPage() {
 
   // 🌐 Facebook redirect
   const openFacebookPage = () => {
-    window.open("https://www.facebook.com/profile.php?id=61582462506784", "_blank");
+    window.open(
+      "https://www.facebook.com/profile.php?id=61582462506784",
+      "_blank"
+    );
   };
 
   return (
@@ -144,9 +147,7 @@ function BookingPage() {
               Tap on the map to set your <b>pickup location</b>, then tap again
               to set your <b>destination</b>.
             </p>
-            <p className="text-xs text-gray-600">
-              (Tap anywhere to continue)
-            </p>
+            <p className="text-xs text-gray-600">(Tap anywhere to continue)</p>
           </div>
         </div>
       )}
@@ -160,7 +161,10 @@ function BookingPage() {
           attributionControl={false}
         >
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          <LocationSelector onSelect={handleSelect} hideHint={() => setShowHint(false)} />
+          <LocationSelector
+            onSelect={handleSelect}
+            hideHint={() => setShowHint(false)}
+          />
 
           {pickup && (
             <Marker position={pickup} icon={markerIcon}>
@@ -213,6 +217,12 @@ function BookingPage() {
                 (Minimum fare applied)
               </p>
             )}
+
+            {/* 📸 Instruction Text */}
+            <p className="text-sm text-gray-400 text-center mt-4">
+              Screenshot this receipt and send it to our Facebook page to
+              confirm your booking.
+            </p>
 
             {/* 🌐 Facebook Booking Button */}
             <button
