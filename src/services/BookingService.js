@@ -703,7 +703,6 @@ export class BookingService {
             ];
 
             if (!activeStatuses.includes(booking.status)) {
-                console.warn('⚠️ Booking not in trackable state:', booking.status);
                 return {
                     success: false,
                     error: `Booking status '${booking.status}' is not trackable`
