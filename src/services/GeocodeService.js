@@ -57,7 +57,6 @@ export class GeocodeService {
     }
 }
 
-// Still useful for manual testing
 window.testGeocode = async (query = "Daet") => {
     return await GeocodeService.searchAddress(query);
 };

@@ -1,17 +1,11 @@
-// src/services/BookingService.js
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export class BookingService {
-    static subscribeToNewBookings(callback) {
-        // Placeholder for future WebSocket implementation
-    }
-
     static async saveBooking(booking) {
         try {
             const pickupName =
@@ -617,7 +611,6 @@ export class BookingService {
 
     static async getAvailableRiders() {
         try {
-            // Static rider data - you can fetch from database later
             const riders = [
                 { id: 1, name: 'Rider One', username: 'rider1', contact: '+639123456789', vehicle: 'Honda Beat', plateNumber: 'ABC123', status: 'active' },
                 { id: 2, name: 'Rider Two', username: 'rider2', contact: '+639987654321', vehicle: 'Yamaha Mio', plateNumber: 'DEF456', status: 'active' },
@@ -625,7 +618,6 @@ export class BookingService {
                 { id: 4, name: 'Rider Four', username: 'rider4', contact: '+639555666777', vehicle: 'Kawasaki Rouser', plateNumber: 'JKL012', status: 'active' }
             ];
             
-            // Get currently assigned bookings to find busy riders
             const { data: assignments, error } = await supabase
                 .from('rider_assignments')
                 .select('rider_id')
@@ -633,13 +625,11 @@ export class BookingService {
 
             if (error) {
                 console.warn('⚠️ Could not fetch assignments, using all riders:', error);
-                return riders; // Return all riders if error
+                return riders;
             }
 
-            // Get active rider IDs
             const activeRiderIds = assignments?.map(a => a.rider_id) || [];
             
-            // Filter out busy riders
             const availableRiders = riders.filter(rider => 
                 !activeRiderIds.includes(rider.id)
             );
@@ -682,7 +672,6 @@ export class BookingService {
         }
     }
 
-    // ================== RIDER LOCATION METHODS ==================
     static async getRiderLocation(bookingNumber) {
         try {
             const { data: booking, error: bookingError } = await supabase
@@ -691,27 +680,56 @@ export class BookingService {
                 .eq('booking_number', bookingNumber)
                 .single();
 
-            if (bookingError) throw bookingError;
+            if (bookingError) {
+                console.error('❌ Booking fetch error:', bookingError);
+                throw bookingError;
+            }
 
             if (!booking || !booking.assigned_rider_id) {
-                throw new Error('No rider assigned to this booking');
+                console.warn('⚠️ No rider assigned to booking:', bookingNumber);
+                return {
+                    success: false,
+                    error: 'No rider assigned to this booking'
+                };
             }
 
-            // ADD 'in_progress' to this list!
-            const activeStatuses = ['confirmed', 'assigned', 'in_progress', 'on_the_way', 'picked_up', 'in_transit'];
+            const activeStatuses = [
+                'confirmed',    // Before assignment
+                'assigned',     // After admin assigns rider
+                'in_progress',  // Rider has started the trip
+                'on_the_way',   // Rider is en route
+                'picked_up',    // Rider has picked up passenger
+                'in_transit'    // Rider is transporting
+            ];
+
             if (!activeStatuses.includes(booking.status)) {
-                throw new Error('Booking is not in active tracking state');
+                return {
+                    success: false,
+                    error: `Booking status '${booking.status}' is not trackable`
+                };
             }
 
-            const { data: location, error: locationError } = await supabase
+            const { data: locations, error: locationError } = await supabase
                 .from('rider_locations')
                 .select('*')
                 .eq('rider_id', booking.assigned_rider_id)
                 .order('timestamp', { ascending: false })
-                .limit(1)
-                .single();
+                .limit(1);
 
-            if (locationError) throw locationError;
+            if (locationError) {
+                console.error('❌ Location fetch error:', locationError);
+                throw locationError;
+            }
+
+            if (!locations || locations.length === 0) {
+                console.warn('⚠️ No location data available for rider:', booking.assigned_rider_id);
+                return {
+                    success: false,
+                    error: 'No location data available yet. Rider may not have started tracking.'
+                };
+            }
+
+            const location = locations[0];
 
             return {
                 success: true,
@@ -720,14 +738,15 @@ export class BookingService {
                     longitude: location.longitude,
                     timestamp: location.timestamp,
                     heading: location.heading || null,
-                    speed: location.speed || null
+                    speed: location.speed || null,
+                    accuracy: location.accuracy || null
                 }
             };
         } catch (error) {
-            console.error('Error getting rider location:', error);
+            console.error('❌ Error getting rider location:', error);
             return {
                 success: false,
-                error: error.message
+                error: error.message || 'Failed to get rider location'
             };
         }
     }

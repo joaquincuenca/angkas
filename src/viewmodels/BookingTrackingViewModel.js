@@ -100,6 +100,7 @@ export function useBookingTracking() {
         try {
             const result = await BookingService.getRiderLocation(bookingNumber);
             
+            // ✅ UPDATED: Check for success property
             if (result.success && result.data) {
                 const newLocation = {
                     lat: result.data.latitude,
@@ -115,13 +116,22 @@ export function useBookingTracking() {
                     newLocation.lng !== riderLocation.lng) {
                     setRiderLocation(newLocation);
                 }
+            } else {
+                // ✅ UPDATED: Handle error responses gracefully
+                if (result.error) {
+                    // Only log non-routine errors
+                    if (!result.error.includes('No rider assigned') && 
+                        !result.error.includes('No location data available') &&
+                        !result.error.includes('not trackable')) {
+                        console.warn('⚠️ Location tracking issue:', result.error);
+                    }
+                }
+                // Don't set location to null if there's an error - keep last known position
             }
         } catch (error) {
-            // Suppress expected errors
-            if (!error.message?.includes('No rider assigned') && 
-                !error.message?.includes('not in active tracking state')) {
-                console.log('Error fetching rider location:', error.message);
-            }
+            // ✅ UPDATED: Better error handling
+            // Only log unexpected errors
+            console.log('📍 Location fetch info:', error.message);
         }
     }, [bookingNumber, booking, riderLocation]);
 
