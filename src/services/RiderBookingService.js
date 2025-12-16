@@ -1,4 +1,3 @@
-// src/services/RiderBookingService.js
 import { supabase } from '../utils/supabaseClient';
 
 export class RiderBookingService {
